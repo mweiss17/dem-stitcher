@@ -16,13 +16,7 @@ def merge_tile_datasets(datasets: List[rasterio.DatasetReader],
                         res_buffer: int = 0,
                         nodata: float = np.nan
                         ) -> Tuple[np.ndarray, dict]:
-    merged_arr, merged_transform = merge(datasets,
-                                         resampling=Resampling[resampling],
-                                         # This fixes the nodata values
-                                         nodata=nodata,
-                                         # This fixes the float32 output
-                                         dtype='float32',
-                                         )
+    merged_arr, merged_transform = merge(datasets,resampling=Resampling[resampling],nodata=nodata,dtype='float32',)
     merged_arr = merged_arr[0, ...]
 
     # each pair is in (row, col) format

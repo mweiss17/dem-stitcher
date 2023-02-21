@@ -42,8 +42,12 @@ def read_ned1(dem_path: str) -> Tuple[np.ndarray, dict]:
 
     return dem_arr, dem_profile
 
-
 def read_srtm(dem_path: str, version='srtm') -> Tuple[np.ndarray, dict]:
+    if dem_path[-4:] == '.hgt':
+        ds = read_dem(dem_path)
+        # dem_arr = ds#.read(1)
+        # dem_profile = ds.profile
+        return ds
     img_bytes = read_dem_bytes(dem_path, suffix='.hgt')
     # The gdal driver hgt depends on filename convention
     filename = dem_path.split('/')[-1]

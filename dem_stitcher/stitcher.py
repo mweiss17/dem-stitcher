@@ -10,6 +10,7 @@ import rasterio
 from rasterio.crs import CRS
 from rasterio.io import MemoryFile
 from tqdm import tqdm
+import os
 
 from .datasets import (get_overlapping_dem_tiles,
                        intersects_missing_glo_30_tiles)
@@ -197,6 +198,7 @@ def _translate_one_tile_across_dateline(dataset: rasterio.DatasetReader, crossin
 
 def stitch_dem(bounds: list,
                dem_name: str,
+               assets_dir: str = None,
                dst_ellipsoidal_height: bool = True,
                dst_area_or_point: str = 'Area',
                dst_resolution: Union[float, Tuple[float]] = None,
@@ -276,13 +278,18 @@ def stitch_dem(bounds: list,
 
     # Datasets that permit virtual warping
     # The readers return DatasetReader rather than (Array, Profile)
-    if dem_name in ['glo_30', 'glo_90', '3dep', 'glo_90_missing']:
+    if dem_name in ['glo_30', 'glo_90', '3dep', 'glo_90_missing', "srtm_v3"]:
         def reader(url):
             return RASTER_READERS[dem_name](url)
-        with ThreadPoolExecutor(max_workers=n_threads_downloading) as executor:
-            results = list(tqdm(executor.map(reader, urls),
-                                total=len(urls),
-                                desc=f'Reading {dem_name} Datasets'))
+
+        results = []
+        for url in urls:
+            path = os.path.join(assets_dir, url.split('/')[-1].split('.')[0] + ".hgt")
+            results.append(reader(path))
+        # with ThreadPoolExecutor(max_workers=n_threads_downloading) as executor:
+            # results = list(tqdm(executor.map(reader, urls),
+            #                     total=len(urls),
+            #                     desc=f'Reading {dem_name} Datasets'))
 
         # If datasets are non-existent, returns None
         datasets = list(filter(lambda x: x is not None, results))
